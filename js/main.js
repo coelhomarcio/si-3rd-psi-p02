@@ -351,8 +351,8 @@ formInputBtn.onclick = () => checkStocks(formInput.value.trim().toUpperCase())
 loadLocalDateTime()
 loadStocksStorage()
 loadStocks(true)
-setInterval(() => loadStocks(false), 10000)
+setInterval(() => loadStocks(false), 60000)
 loadNews()
-setInterval(() => loadNews(true), 10000)
+setInterval(() => loadNews(true), 60000)
 
 // =====================================================================================================================
