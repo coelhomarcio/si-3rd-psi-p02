@@ -5,7 +5,7 @@ const formInput = document.querySelector("input")
 const formInputBtn = document.querySelector("#input_btn")
 const urlCors = "https://cors-anywhere.herokuapp.com/"
 const urlLocalDateTime = urlCors + "https://time.is/Unix/"
-const urlStocks = "http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/"
+const urlStocks = urlCors + "http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/"
 const urlNews = urlCors + "https://br.investing.com/news/stock-market-news/"
 let dbStocks = ["PETR4", "VALE3", "PETR3", "MGLU3", "AZUL4"]
 
