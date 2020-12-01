@@ -23,4 +23,4 @@ _**Instruções:**_
 
 _**Entrega:**_  
 - URL no canal Trabalho do Teams;
-- 24/11 até 13:29.
+- 01/12 até 13:00.
