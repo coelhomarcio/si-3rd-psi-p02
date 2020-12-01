@@ -3,7 +3,8 @@
 const form = document.querySelector("form")
 const formInput = document.querySelector("input")
 const formInputBtn = document.querySelector("#input_btn")
-const urlCors = "https://cors-anywhere.herokuapp.com/"
+const urlCors = "https://enigmatic-sierra-60542.herokuapp.com/"
+// const urlCors = "https://cors-anywhere.herokuapp.com/"
 const urlLocalDateTime = urlCors + "https://time.is/Unix/"
 const urlStocks = "http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/"
 const urlNews = urlCors + "https://br.investing.com/news/stock-market-news/"
