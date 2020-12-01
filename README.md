@@ -1,6 +1,6 @@
 # SI - 3º Ciclo - PSI - Avaliação 02
 
-Avaliação da disciplina _Programação de Sítios Internet_ realizado entre 10 a 24 de novembro de 2020 no 3º Ciclo
+Avaliação da disciplina _Programação de Sítios Internet_ realizado entre 10 de novembro a 01 de dezembro de 2020 no 3º Ciclo
 do Curso de _Sistemas para Internet_ pela **Fatec Rubens Lara**.
 
 ## Integrantes
