@@ -3,6 +3,7 @@
 const form = document.querySelector("form")
 const formInput = document.querySelector("input")
 const formInputBtn = document.querySelector("#input_btn")
+const warnings = document.querySelector(".warnings")
 const urlCors = "https://enigmatic-sierra-60542.herokuapp.com/"
 // const urlCors = "https://cors-anywhere.herokuapp.com/"
 const urlLocalDateTime = urlCors + "https://time.is/Unix/"
@@ -82,12 +83,12 @@ function checkStocks(stock) {
         setTimeout(() => formInput.classList.remove("empty_field"), 500)
     }
     else if (dbStocks.includes(stock)) {
-        form.classList.add("stock_repeated")
-        setTimeout(() => form.classList.remove("stock_repeated"), 2000)
+        warnings.classList.add("stock_repeated")
+        setTimeout(() => warnings.classList.remove("stock_repeated"), 2000)
     }
     else if (dbStocks.length >= 10) {
-        form.classList.add("stock_limit")
-        setTimeout(() => form.classList.remove("stock_limit"), 2000)
+        warnings.classList.add("stock_limit")
+        setTimeout(() => warnings.classList.remove("stock_limit"), 2000)
     }
     else {
         updateDb(stock)
@@ -122,21 +123,21 @@ function loadStocks(firstTime, warningAdded=false) {
                     else
                         stocksUpdateElem(item)
                     if (warningAdded) {
-                        form.classList.add("stock_added")
-                        setTimeout(() => form.classList.remove("stock_added"), 2000)
+                        warnings.classList.add("stock_added")
+                        setTimeout(() => warnings.classList.remove("stock_added"), 2000)
                     }
                 }
                 else if (warningAdded) {
                     updateDb(item[0], false)
-                    form.classList.add("stock_not_exist")
-                    setTimeout(() => form.classList.remove("stock_not_exist"), 2000)
+                    warnings.classList.add("stock_not_exist")
+                    setTimeout(() => warnings.classList.remove("stock_not_exist"), 2000)
                 }
             })
         })
         .catch(error => {
             if (error.message === "Failed to fetch") {
-                form.classList.add("out_of_service")
-                setTimeout(() => form.classList.remove("out_of_service"), 2000)
+                warnings.classList.add("out_of_service")
+                setTimeout(() => warnings.classList.remove("out_of_service"), 2000)
                 if (warningAdded)
                     updateDb(dbStocks[dbStocks.length -1], false)
             }
@@ -290,7 +291,7 @@ async function getNews(newsTitleSelector, newsBriefSelector, newsTimeAgoSelector
             news.timeAgo[i] = newsTimeAgo[i].textContent
             news.img[i] = await newsImg[i].getAttribute("data-src")
             if (newsLink[i].getAttribute("href")[0] === "/")
-                news.link[i] = linkRoot + await newsLink[i].getAttribute("href")
+                news.link[i] = linkRoot + newsLink[i].getAttribute("href")
             else
                 news.link[i] = await newsLink[i].getAttribute("href")
         }
@@ -354,6 +355,6 @@ loadStocksStorage()
 loadStocks(true)
 setInterval(() => loadStocks(false), 1000)
 loadNews()
-setInterval(() => loadNews(true), 60000)
+setInterval(() => loadNews(true), 300000)
 
 // =====================================================================================================================

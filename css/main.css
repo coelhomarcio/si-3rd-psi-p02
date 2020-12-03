@@ -146,6 +146,11 @@ main form label {
     left: .2em;
 }
 
+.warnings {
+    height: 2em;
+    margin: 1em auto;
+}
+
 .empty_field {
     outline: .2em solid #f00c;
     transition: outline-color 250ms ease-in-out;
@@ -160,7 +165,6 @@ main form label {
     color: #fafafa;
     font-weight: 600;
     border-radius: .2em;
-    position: absolute;
 }
 
 .stock_repeated::after {
@@ -190,7 +194,7 @@ main form label {
 
 #stocks_elem_div {
     display: grid;
-    grid-template-columns: repeat(5, 18%);
+    grid-template-columns: repeat(auto-fit, 15em);
     grid-template-rows: auto;
     grid-gap: 1em;
     justify-content: center;
@@ -202,17 +206,11 @@ main form label {
     height: 18em;
     color: #fafafa;
     background-color: #2b2b2b;
+    border-radius: .5em;
     border: 1px solid #ccc;
     box-shadow: .25em .25em .5em #2b2b2bcc;
-    position: relative;
-}
-
-#stocks_elem_div > div {
-    color: #fafafa;
-    width: 100%;
-    border-radius: .5em;
-    position: relative;
     transition: opacity 250ms ease-in-out;
+    position: relative;
 }
 
 #stocks_elem_div > div > div:nth-child(1) {
@@ -301,7 +299,7 @@ aside {
     padding: 2em;
     border-radius: .2em;
     display: grid;
-    grid-template-columns: repeat(2, 45%);
+    grid-template-columns: repeat(auto-fit, 45%);
     grid-gap: 3em;
     justify-content: center;
     justify-items: center;
@@ -391,24 +389,71 @@ footer > *:not(:last-child) {
     font-size: 1.5em;
 }
 
-@media screen and (max-width: 768px) {
-    #stocks_elem_div {
-        grid-template-columns: repeat(2, 32%);
+@media screen and (max-width: 1024px) {
+    #news_elem_div {
+        grid-template-columns: repeat(auto-fit, 90%);
     }
 }
 
-@media screen and (max-width: 576px) {
-    #stocks_elem_div {
-        grid-template-columns: repeat(1, 32%);
-    }
-}
-
-@media screen and (max-width: 460px) {
+@media screen and (max-width: 512px) {
     header img {
         max-width: 70%;
     }
 
+    main form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #input_btn {
+        margin-top: 1em;
+    }
+
     #stocks_elem_div {
-        grid-template-columns: repeat(1, 48%);
+        grid-template-columns: repeat(auto-fit, 90%);
+    }
+
+    #stocks_elem_div > div {
+        height: 6em;
+    }
+
+    #stocks_elem_div > div > div:nth-child(1) {
+        padding: 2.5% 5%;
+    }
+
+    #stocks_elem_div > div > div:nth-child(2),
+    #stocks_elem_div > div > div:nth-child(4),
+    #stocks_elem_div > div > div:nth-child(7) {
+        display: none;
+    }
+
+    #stocks_elem_div > div > div:nth-child(3) {
+        top: 4em;
+        left: 5%;
+    }
+
+    #stocks_elem_div > div > div:nth-child(5) {
+        top: 4em;
+        left: 30%;
+    }
+
+    #stocks_elem_div > div > div:nth-child(6) {
+        top: 4em;
+        left: 35%;
+    }
+
+    #stocks_elem_div > div > div:nth-child(8) {
+        top: 4em;
+        left: 55%;
+    }
+
+    #stocks_elem_div > div > div:nth-child(9) {
+        top: 4em;
+        right: 5%;
+    }
+
+    #stocks_elem_div > div > div:nth-child(10) {
+        padding: 2.5% 5%;
+        border-radius: 0 .2em .2em 0;
     }
 }
