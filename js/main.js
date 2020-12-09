@@ -5,7 +5,6 @@ const formInput = document.querySelector("input")
 const formInputBtn = document.querySelector("#input_btn")
 const warnings = document.querySelector(".warnings")
 const urlCors = "https://enigmatic-sierra-60542.herokuapp.com/"
-// const urlCors = "https://cors-anywhere.herokuapp.com/"
 const urlLocalDateTime = urlCors + "https://time.is/Unix/"
 const urlStocks = "http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/"
 const urlNews = urlCors + "https://br.investing.com/news/stock-market-news/"
@@ -116,12 +115,17 @@ function loadStocks(firstTime, warningAdded=false) {
     loadStocksStorage()
     Promise.all(promises(firstTime))
         .then(response => {
+            const stocksElemDiv = document.querySelector("#stocks_elem_div")
             response.forEach(item => {
+                if (warnings.classList.contains("out_of_service")) {
+                    warnings.classList.remove("out_of_service")
+                    loadStocks(true)
+                }
                 if (item.length !== 0) {
                     if (firstTime)
-                        stocksCreateElem(item)
+                        stocksCreateElem(stocksElemDiv, item)
                     else
-                        stocksUpdateElem(item)
+                        stocksUpdateElem(stocksElemDiv, item)
                     if (warningAdded) {
                         warnings.classList.add("stock_added")
                         setTimeout(() => warnings.classList.remove("stock_added"), 2000)
@@ -136,8 +140,8 @@ function loadStocks(firstTime, warningAdded=false) {
         })
         .catch(error => {
             if (error.message === "Failed to fetch") {
-                warnings.classList.add("out_of_service")
-                setTimeout(() => warnings.classList.remove("out_of_service"), 2000)
+                if (! warnings.classList.contains("out_of_service"))
+                    warnings.classList.add("out_of_service")
                 if (warningAdded)
                     updateDb(dbStocks[dbStocks.length -1], false)
             }
@@ -180,8 +184,7 @@ async function getStocks(stock) {
     return stockInfo
 }
 
-function stocksCreateElem(stockInfo) {
-    const stocksElemDiv = document.querySelector("#stocks_elem_div")
+function stocksCreateElem(stocksElemDiv, stockInfo) {
     const stockElemDiv = document.createElement("div")
     stockElemDiv.style.opacity = "0"
     stocksElemDiv.appendChild(stockElemDiv)
@@ -191,40 +194,8 @@ function stocksCreateElem(stockInfo) {
     stockElemDiv.id = stockInfo[0]
     stockInfo.forEach(info => {
         stockElemDiv.appendChild(document.createElement("div")).innerHTML = info
-        if (info === stockInfo[5]) {
-            let fluctuation = info.replace(",", ".").slice(0, -1)
-            if (fluctuation > 0) {
-                stockElemDiv.children[4].style.color = "#00ff00cc"
-                stockElemDiv.children[5].style.color = "#00ff00cc"
-            }
-            else if (fluctuation < 0) {
-                stockElemDiv.children[4].style.color = "#ff3300"
-                stockElemDiv.children[5].style.color = "#ff3300"
-            }
-            else {
-                stockElemDiv.children[5].style.color = "#fafafa"
-            }
-        }
-        // rever a parte acima para update
-        // refazer a parte abaixo
-        // if (info === stockInfo[2]) {
-        //     const togglePrice = blinkPrice(info.replace(",", ".").slice(3, -1))
-        //     if (togglePrice === 1) {
-        //         stockElemDiv.children[2].style.color = "#00ff00cc"
-        //         stockElemDiv.children[5].style.backgroundColor = "#00ff00cc"
-        //         setTimeout(() => {
-        //             stockElemDiv.children[2].style.color = "#fafafa"
-        //             stockElemDiv.children[5].style.backgroundColor = "#2b2b2b"
-        //         }, 250)
-        //     } else if (togglePrice === 2) {
-        //         stockElemDiv.children[2].style.color = "#ff3300"
-        //         stockElemDiv.children[5].style.backgroundColor = "#ff3300"
-        //         setTimeout(() => {
-        //             stockElemDiv.children[2].style.color = "#fafafa"
-        //             stockElemDiv.children[5].style.backgroundColor = "#2b2b2b"
-        //         }, 250)
-        //     }
-        // }
+        if (info === stockInfo[2] || info === stockInfo[5])
+            animationStockElemDiv(stockElemDiv, stockInfo, info)
     })
     stockElemDiv.lastElementChild.onclick = () => {
         stockElemDiv.style.opacity = "0"
@@ -235,9 +206,52 @@ function stocksCreateElem(stockInfo) {
     }
 }
 
-function stocksUpdateElem(stockInfo) {
-    const stockElemDiv = document.getElementById(stockInfo[0])
-    stockInfo.forEach((info, index) => stockElemDiv.children[index].innerHTML = info)
+function stocksUpdateElem(stocksElemDiv, stockInfo) {
+    if (stocksElemDiv.childElementCount === 0)
+        stocksCreateElem(stocksElemDiv, stockInfo)
+    else {
+        const stockElemDiv = document.getElementById(stockInfo[0])
+        stockInfo.forEach((info, index) => {
+            const stockOldPrice = stockElemDiv.children[2].textContent
+                .replace(",", ".").slice(3)
+            stockElemDiv.children[index].innerHTML = info
+            if (info === stockInfo[2] || info === stockInfo[5])
+                animationStockElemDiv(stockElemDiv, stockInfo, info, stockOldPrice)
+        })
+    }
+}
+
+function animationStockElemDiv(stockElemDiv, stockInfo, info, stockOldPrice=false) {
+    if (stockOldPrice && info === stockInfo[2]) {
+        if (info.replace(",", ".").slice(3) > stockOldPrice) {
+            stockElemDiv.children[2].style.color = "#00ff00cc"
+            stockElemDiv.children[2].style.backgroundColor = "#fafafa"
+            setTimeout(() => {
+                stockElemDiv.children[2].style.color = "#fafafa"
+                stockElemDiv.children[2].style.backgroundColor = "#2b2b2b"
+            }, 250)
+        }
+        else if (info.replace(",", ".").slice(3) < stockOldPrice) {
+            stockElemDiv.children[2].style.color = "#ff3300"
+            stockElemDiv.children[2].style.backgroundColor = "#fafafa"
+            setTimeout(() => {
+                stockElemDiv.children[2].style.color = "#fafafa"
+                stockElemDiv.children[2].style.backgroundColor = "#2b2b2b"
+            }, 250)
+        }
+    }
+    if (info === stockInfo[5]) {
+        let fluctuation = info.replace(",", ".").slice(0, -1)
+        if (fluctuation > 0) {
+            stockElemDiv.children[4].style.color = "#00ff00cc"
+            stockElemDiv.children[5].style.color = "#00ff00cc"
+        } else if (fluctuation < 0) {
+            stockElemDiv.children[4].style.color = "#ff3300"
+            stockElemDiv.children[5].style.color = "#ff3300"
+        } else {
+            stockElemDiv.children[5].style.color = "#fafafa"
+        }
+    }
 }
 
 function updateDb(stock, addStock=true) {
@@ -253,24 +267,27 @@ function updateDb(stock, addStock=true) {
 // NEWS ================================================================================================================
 
 function loadNews(refresh=false) {
-    const newsElement = document.querySelector("#news_elem_div")
+    const newsElementDiv = document.querySelector("#news_elem_div")
     const newsArticleSelector = ".largeTitle"
     const newsTitleSelector = newsArticleSelector + " article .title"
     const newsBriefSelector = newsArticleSelector + " article .textDiv p"
     const newsTimeAgoSelector = newsArticleSelector + " article .date"
     const newsImgSelector = newsArticleSelector + " article a img"
     const newsLinkSelector = newsArticleSelector + " article > a"
+    const newsQty = 20
     const errorMsg = "Notícias fora do ar! Nova tentativa em 1 minuto..."
     getNews(newsTitleSelector, newsBriefSelector,
-        newsTimeAgoSelector, newsImgSelector,
-        newsLinkSelector, refresh)
-        .then(response => updateNews(newsElement, response, refresh))
+            newsTimeAgoSelector, newsImgSelector,
+            newsLinkSelector, refresh, newsQty)
+        .then(response => updateNews(newsElementDiv, response, refresh, newsQty))
         .catch(error => {
-            if (error) newsElement.textContent = errorMsg
+            if (error) newsElementDiv.textContent = errorMsg
         })
 }
 
-async function getNews(newsTitleSelector, newsBriefSelector, newsTimeAgoSelector, newsImgSelector, newsLinkSelector) {
+async function getNews(newsTitleSelector, newsBriefSelector,
+                       newsTimeAgoSelector, newsImgSelector,
+                       newsLinkSelector, refresh, newsQty) {
     const doc = await fetchDOM(urlNews)
     const news = {}
     news.title = []
@@ -285,7 +302,7 @@ async function getNews(newsTitleSelector, newsBriefSelector, newsTimeAgoSelector
         const newsImg = await doc.querySelectorAll(newsImgSelector)
         const linkRoot = "https://br.investing.com"
         const newsLink = await doc.querySelectorAll(newsLinkSelector)
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < newsQty; i++) {
             news.title[i] = await newsTitle[i].textContent.trim()
             news.brief[i] = await newsBrief[i].textContent.trim()
             news.timeAgo[i] = newsTimeAgo[i].textContent
@@ -302,37 +319,29 @@ async function getNews(newsTitleSelector, newsBriefSelector, newsTimeAgoSelector
     return news
 }
 
-function updateNews(newsElement, response, refresh) {
+function updateNews(newsElementDiv, response, refresh, newsQty) {
     if (! refresh) {
-        for (let i = 0; i < 20; i++) {
+        newsElementDiv.innerHTML = ""
+        for (let i = 0; i < newsQty; i++) {
             const newsDiv = document.createElement("div")
-            const newsH3 = document.createElement("h3")
-            const newsP = document.createElement("p")
-            const newsSmall = document.createElement("small")
-            const newsA = document.createElement("a")
-            const newsImg = document.createElement("img")
-            newsElement.appendChild(newsDiv)
-            newsDiv.appendChild(newsH3).textContent = response.title[i]
-            newsDiv.appendChild(newsP).textContent = response.brief[i]
-            newsDiv.appendChild(newsP).appendChild(newsSmall).textContent = response.timeAgo[i]
-            newsDiv.appendChild(newsA).setAttribute("href", response.link[i])
-            newsA.setAttribute("target", "blank_")
-            newsA.appendChild(newsImg).setAttribute("src", response.img[i])
+            newsElementDiv.appendChild(newsDiv)
+            newsDiv.innerHTML =
+                `<h3>${response.title[i]}</h3>
+                <p>${response.brief[i]}<small>${response.timeAgo[i]}</small></p>
+                <a href="${response.link[i]}" target="_blank">
+                <img src="${response.img[i]}" alt="${response.title[i]}"></a>`
         }
     }
-    else if (newsElement.firstElementChild.firstElementChild.textContent !== response.title[0]) {
-        const newsH3 = newsElement.querySelector("h3")
-        const newsP = newsElement.querySelector("p")
-        const newsSmall = newsElement.querySelector("small")
-        const newsA = newsElement.querySelector("a")
-        const newsImg = newsElement.querySelector("img")
-        for (let i = 0; i < 20; i++) {
-            newsH3[i].textContent = response.title[i]
-            newsP.textContent = response.brief[i]
-            newsSmall.textContent = response.timeAgo[i]
-            newsA.setAttribute("href", response.link[i])
-            newsA.setAttribute("target", "blank_")
-            newsImg.setAttribute("src", response.img[i])
+    else {
+        if (newsElementDiv.childElementCount < newsQty)
+            updateNews(newsElementDiv, response, false, newsQty)
+        else {
+            const newsDivs = newsElementDiv.querySelectorAll("div")
+            newsDivs.forEach((news, index) => news.innerHTML =
+                `<h3>${response.title[index]}</h3>
+                <p>${response.brief[index]}<small>${response.timeAgo[index]}</small></p>
+                <a href="${response.link[index]}" target="_blank">
+                <img src="${response.img[index]}" alt="${response.title[index]}"></a>`)
         }
     }
 }
@@ -355,6 +364,6 @@ loadStocksStorage()
 loadStocks(true)
 setInterval(() => loadStocks(false), 1000)
 loadNews()
-setInterval(() => loadNews(true), 300000)
+setInterval(() => loadNews(true), 60000)
 
 // =====================================================================================================================
