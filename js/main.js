@@ -98,6 +98,8 @@ function checkStocks(stock) {
 }
 
 function loadStocks(firstTime, warningAdded=false) {
+    const stocksElemDiv = document.querySelector("#stocks_elem_div")
+
     function promises(firstTime) {
         if (firstTime) {
             return dbStocks
@@ -115,7 +117,6 @@ function loadStocks(firstTime, warningAdded=false) {
     loadStocksStorage()
     Promise.all(promises(firstTime))
         .then(response => {
-            const stocksElemDiv = document.querySelector("#stocks_elem_div")
             response.forEach(item => {
                 if (warnings.classList.contains("out_of_service")) {
                     warnings.classList.remove("out_of_service")
@@ -268,27 +269,24 @@ function updateDb(stock, addStock=true) {
 
 function loadNews(refresh=false) {
     const newsElementDiv = document.querySelector("#news_elem_div")
-    const newsArticleSelector = ".largeTitle"
-    const newsTitleSelector = newsArticleSelector + " article .title"
-    const newsBriefSelector = newsArticleSelector + " article .textDiv p"
-    const newsTimeAgoSelector = newsArticleSelector + " article .date"
-    const newsImgSelector = newsArticleSelector + " article a img"
-    const newsLinkSelector = newsArticleSelector + " article > a"
     const newsQty = 20
     const errorMsg = "Notícias fora do ar! Nova tentativa em 1 minuto..."
-    getNews(newsTitleSelector, newsBriefSelector,
-            newsTimeAgoSelector, newsImgSelector,
-            newsLinkSelector, refresh, newsQty)
+    getNews(refresh, newsQty)
         .then(response => updateNews(newsElementDiv, response, refresh, newsQty))
         .catch(error => {
             if (error) newsElementDiv.textContent = errorMsg
         })
 }
 
-async function getNews(newsTitleSelector, newsBriefSelector,
-                       newsTimeAgoSelector, newsImgSelector,
-                       newsLinkSelector, refresh, newsQty) {
+async function getNews(refresh, newsQty) {
     const doc = await fetchDOM(urlNews)
+    const newsArticleSelector = ".largeTitle"
+    const newsTitleSelector = newsArticleSelector + " article .title"
+    const newsBriefSelector = newsArticleSelector + " article .textDiv p"
+    const newsTimeAgoSelector = newsArticleSelector + " article .date"
+    const newsImgSelector = newsArticleSelector + " article a img"
+    const newsLinkSelector = newsArticleSelector + " article > a"
+    const linkRoot = "https://br.investing.com"
     const news = {}
     news.title = []
     news.brief = []
@@ -300,7 +298,6 @@ async function getNews(newsTitleSelector, newsBriefSelector,
         const newsBrief = await doc.querySelectorAll(newsBriefSelector)
         const newsTimeAgo = await doc.querySelectorAll(newsTimeAgoSelector)
         const newsImg = await doc.querySelectorAll(newsImgSelector)
-        const linkRoot = "https://br.investing.com"
         const newsLink = await doc.querySelectorAll(newsLinkSelector)
         for (let i = 0; i < newsQty; i++) {
             news.title[i] = await newsTitle[i].textContent.trim()
@@ -341,7 +338,8 @@ function updateNews(newsElementDiv, response, refresh, newsQty) {
                 `<h3>${response.title[index]}</h3>
                 <p>${response.brief[index]}<small>${response.timeAgo[index]}</small></p>
                 <a href="${response.link[index]}" target="_blank">
-                <img src="${response.img[index]}" alt="${response.title[index]}"></a>`)
+                <img src="${response.img[index]}" alt="${response.title[index]}"></a>`
+            )
         }
     }
 }
