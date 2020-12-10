@@ -5,9 +5,6 @@ const formInput = document.querySelector("input")
 const formInputBtn = document.querySelector("#input_btn")
 const warnings = document.querySelector(".warnings")
 const urlCors = "https://enigmatic-sierra-60542.herokuapp.com/"
-const urlLocalDateTime = urlCors + "https://time.is/Unix/"
-const urlStocks = "http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/"
-const urlNews = urlCors + "https://br.investing.com/news/stock-market-news/"
 let dbStocks = ["PETR4", "VALE3", "PETR3", "MGLU3", "AZUL4"]
 
 // =====================================================================================================================
@@ -47,6 +44,7 @@ function loadLocalDateTime() {
 }
 
 async function getLocalDateTime(localSelector, dateTimeSelector, localDateTimeElement) {
+    const urlLocalDateTime = urlCors + "https://time.is/Unix/"
     const doc = await fetchDOM(urlLocalDateTime)
     const local = doc.querySelector(localSelector).textContent
     const dateTime = doc.querySelector(dateTimeSelector).textContent
@@ -150,6 +148,7 @@ function loadStocks(firstTime, warningAdded=false) {
 }
 
 async function getStocks(stock) {
+    const urlStocks = "http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/"
     const dataStock = await fetchJSON(urlStocks + await stock)
     const lastIndex = await dataStock.TradgFlr.scty.lstQtn.length - 1
     const arrowUp = "<i class=\"fas fa-long-arrow-alt-up\"></i>"
@@ -279,6 +278,7 @@ function loadNews(refresh=false) {
 }
 
 async function getNews(refresh, newsQty) {
+    const urlNews = urlCors + "https://br.investing.com/news/stock-market-news/"
     const doc = await fetchDOM(urlNews)
     const newsArticleSelector = ".largeTitle"
     const newsTitleSelector = newsArticleSelector + " article .title"
