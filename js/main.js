@@ -225,19 +225,15 @@ function animationStockElemDiv(stockElemDiv, stockInfo, info, stockOldPrice=fals
     if (stockOldPrice && info === stockInfo[2]) {
         if (info.replace(",", ".").slice(3) > stockOldPrice) {
             stockElemDiv.children[2].style.color = "#00ff00cc"
-            stockElemDiv.children[2].style.backgroundColor = "#fafafa"
             setTimeout(() => {
                 stockElemDiv.children[2].style.color = "#fafafa"
-                stockElemDiv.children[2].style.backgroundColor = "#2b2b2b"
-            }, 250)
+            }, 500)
         }
         else if (info.replace(",", ".").slice(3) < stockOldPrice) {
             stockElemDiv.children[2].style.color = "#ff3300"
-            stockElemDiv.children[2].style.backgroundColor = "#fafafa"
             setTimeout(() => {
                 stockElemDiv.children[2].style.color = "#fafafa"
-                stockElemDiv.children[2].style.backgroundColor = "#2b2b2b"
-            }, 250)
+            }, 500)
         }
     }
     if (info === stockInfo[5]) {
@@ -268,10 +264,10 @@ function updateDb(stock, addStock=true) {
 
 function loadNews(refresh=false) {
     const newsElementDiv = document.querySelector("#news_elem_div")
-    const newsQty = 20
+    let newsQty
     const errorMsg = "Notícias fora do ar! Nova tentativa em 1 minuto..."
     getNews(refresh, newsQty)
-        .then(response => updateNews(newsElementDiv, response, refresh, newsQty))
+        .then(response => updateNews(newsElementDiv, response[0], refresh, response[1]))
         .catch(error => {
             if (error) newsElementDiv.textContent = errorMsg
         })
@@ -280,12 +276,6 @@ function loadNews(refresh=false) {
 async function getNews(refresh, newsQty) {
     const urlNews = urlCors + "https://br.investing.com/news/stock-market-news/"
     const doc = await fetchDOM(urlNews)
-    const newsArticleSelector = ".largeTitle"
-    const newsTitleSelector = newsArticleSelector + " article .title"
-    const newsBriefSelector = newsArticleSelector + " article .textDiv p"
-    const newsTimeAgoSelector = newsArticleSelector + " article .date"
-    const newsImgSelector = newsArticleSelector + " article a img"
-    const newsLinkSelector = newsArticleSelector + " article > a"
     const linkRoot = "https://br.investing.com"
     const news = {}
     news.title = []
@@ -293,6 +283,33 @@ async function getNews(refresh, newsQty) {
     news.timeAgo = []
     news.img = []
     news.link = []
+    let newsArticleSelector
+    let newsTitleSelector
+    let newsBriefSelector
+    let newsTimeAgoSelector
+    let newsImgSelector
+    let newsLinkSelector
+    let newsImgSrc
+    if (await doc.querySelector(".largeTitle")) {
+        newsArticleSelector = ".largeTitle"
+        newsTitleSelector = newsArticleSelector + " article .title"
+        newsBriefSelector = newsArticleSelector + " article .textDiv p"
+        newsTimeAgoSelector = newsArticleSelector + " article .date"
+        newsImgSelector = newsArticleSelector + " article a img"
+        newsLinkSelector = newsArticleSelector + " article > a"
+        newsQty = 20
+        newsImgSrc = "data-src"
+    }
+    else if (await doc.querySelector(".js-articles-list")) {
+        newsArticleSelector = ".js-articles-list"
+        newsTitleSelector = newsArticleSelector + " article a"
+        newsBriefSelector = newsArticleSelector + " article a"
+        newsTimeAgoSelector = newsArticleSelector + " article p"
+        newsImgSelector = newsArticleSelector + " article img"
+        newsLinkSelector = newsArticleSelector + " article a"
+        newsQty = 10
+        newsImgSrc = "src"
+    }
     try {
         const newsTitle = await doc.querySelectorAll(newsTitleSelector)
         const newsBrief = await doc.querySelectorAll(newsBriefSelector)
@@ -303,7 +320,7 @@ async function getNews(refresh, newsQty) {
             news.title[i] = await newsTitle[i].textContent.trim()
             news.brief[i] = await newsBrief[i].textContent.trim()
             news.timeAgo[i] = newsTimeAgo[i].textContent
-            news.img[i] = await newsImg[i].getAttribute("data-src")
+            news.img[i] = await newsImg[i].getAttribute(newsImgSrc)
             if (newsLink[i].getAttribute("href")[0] === "/")
                 news.link[i] = linkRoot + newsLink[i].getAttribute("href")
             else
@@ -313,10 +330,14 @@ async function getNews(refresh, newsQty) {
     catch (error) {
         return error
     }
-    return news
+    return [news, newsQty]
 }
 
 function updateNews(newsElementDiv, response, refresh, newsQty) {
+    if (newsQty === 10) {
+        response.brief.map((item, index) => response.brief[index] = "")
+        response.timeAgo.map((item, index) => response.timeAgo[index] = "Fonte: " + item)
+    }
     if (! refresh) {
         newsElementDiv.innerHTML = ""
         for (let i = 0; i < newsQty; i++) {

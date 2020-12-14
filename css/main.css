@@ -338,17 +338,23 @@ aside {
 #news_elem_div > div a {
     justify-self: end;
     grid-area: img;
+    transition: opacity 250ms ease-in-out;
+}
+
+#news_elem_div > div a:hover {
+    color: #fafafa;
+    opacity: .5;
+}
+
+#news_elem_div > div a::after {
+    content: "Clique para saber mais!";
+    font-size: .7em;
 }
 
 #news_elem_div > div a img {
     max-width: 100%;
     width: 100%;
     display: block;
-    transition: opacity 250ms ease-in-out;
-}
-
-#news_elem_div > div a img:hover {
-    opacity: .5;
 }
 
 footer {
